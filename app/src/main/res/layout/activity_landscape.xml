@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/win_desktop"
+    android:fitsSystemWindows="true">
+
+    <!-- Desktop app grid -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/desktop_grid"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/taskbar"
+        android:padding="10dp"
+        android:clipToPadding="false" />
+
+    <!-- Switch-launcher overlay (shown when ⇄ is tapped) -->
+    <FrameLayout
+        android:id="@+id/switch_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#BB000000"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:id="@+id/switch_dialog"
+            android:layout_width="300dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:orientation="vertical"
+            android:background="@drawable/bg_win_dialog"
+            android:padding="24dp"
+            android:clickable="true"
+            android:focusable="true">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Switch Launcher"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:paddingBottom="6dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Slide all the way right to change your default home app."
+                android:textColor="#BBFFFFFF"
+                android:textSize="12sp"
+                android:paddingBottom="18dp" />
+
+            <TextView
+                android:id="@+id/slider_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Slide to switch launcher"
+                android:textColor="#0078D4"
+                android:textSize="12sp"
+                android:paddingBottom="8dp" />
+
+            <SeekBar
+                android:id="@+id/switch_slider"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:max="100"
+                android:progress="0"
+                android:progressTint="#0078D4"
+                android:thumbTint="#0078D4" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Tap outside this box to cancel"
+                android:textColor="#66FFFFFF"
+                android:textSize="10sp"
+                android:gravity="center"
+                android:paddingTop="14dp" />
+        </LinearLayout>
+    </FrameLayout>
+
+    <!-- Taskbar -->
+    <LinearLayout
+        android:id="@+id/taskbar"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:layout_alignParentBottom="true"
+        android:orientation="horizontal"
+        android:background="@color/win_taskbar"
+        android:gravity="center_vertical"
+        android:paddingStart="6dp"
+        android:paddingEnd="6dp"
+        android:elevation="6dp">
+
+        <!-- Start button -->
+        <TextView
+            android:id="@+id/start_btn"
+            android:layout_width="46dp"
+            android:layout_height="46dp"
+            android:text="⊞"
+            android:textSize="22sp"
+            android:textColor="#FFFFFF"
+            android:gravity="center"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?android:attr/selectableItemBackgroundBorderless" />
+
+        <!-- Flexible spacer -->
+        <View
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1" />
+
+        <!-- Switch launcher button -->
+        <LinearLayout
+            android:id="@+id/switch_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?android:attr/selectableItemBackground">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="⇄ Switch"
+                android:textColor="#AAFFFFFF"
+                android:textSize="11sp" />
+        </LinearLayout>
+
+        <!-- Divider -->
+        <View
+            android:layout_width="1dp"
+            android:layout_height="24dp"
+            android:background="#44FFFFFF"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp" />
+
+        <!-- Clock -->
+        <TextView
+            android:id="@+id/taskbar_clock"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="12:00 PM&#10;Mon 1/1"
+            android:textColor="#FFFFFF"
+            android:textSize="10sp"
+            android:gravity="center"
+            android:paddingStart="6dp"
+            android:paddingEnd="6dp" />
+    </LinearLayout>
+</RelativeLayout>
