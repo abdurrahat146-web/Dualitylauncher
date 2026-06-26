@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="win_desktop">#141414</color>
+    <color name="win_taskbar">#1F1F1F</color>
+    <color name="win_accent">#0078D4</color>
+    <color name="android_accent">#7C4DFF</color>
+    <color name="ic_launcher_bg">#7C4DFF</color>
+</resources>
