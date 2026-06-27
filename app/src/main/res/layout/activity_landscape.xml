@@ -2,10 +2,12 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/win_desktop"
+    android:background="@drawable/bg_win11_desktop"
     android:fitsSystemWindows="true">
 
-    <!-- Desktop app grid -->
+    <!-- ══════════════════════════════════════════════════════════════
+         DESKTOP ICON GRID
+    ═══════════════════════════════════════════════════════════════ -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/desktop_grid"
         android:layout_width="match_parent"
@@ -14,89 +16,349 @@
         android:padding="10dp"
         android:clipToPadding="false" />
 
-    <!-- Switch-launcher overlay (shown when ⇄ is tapped) -->
-    <FrameLayout
-        android:id="@+id/switch_overlay"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#BB000000"
-        android:visibility="gone">
+    <!-- ══════════════════════════════════════════════════════════════
+         START MENU  (centered above taskbar, GONE by default)
+    ═══════════════════════════════════════════════════════════════ -->
+    <LinearLayout
+        android:id="@+id/start_panel"
+        android:layout_width="360dp"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/taskbar"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="4dp"
+        android:orientation="vertical"
+        android:background="@drawable/bg_win11_panel"
+        android:elevation="24dp"
+        android:visibility="gone"
+        android:clickable="true"
+        android:focusable="true">
 
+        <!-- Search bar -->
         <LinearLayout
-            android:id="@+id/switch_dialog"
-            android:layout_width="300dp"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:orientation="vertical"
-            android:background="@drawable/bg_win_dialog"
-            android:padding="24dp"
-            android:clickable="true"
-            android:focusable="true">
-
+            android:layout_width="match_parent"
+            android:layout_height="36dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="#1AFFFFFF"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:margin="12dp">
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Switch Launcher"
+                android:text="🔍"
+                android:textSize="14sp"
+                android:paddingEnd="8dp" />
+            <EditText
+                android:id="@+id/start_search"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@null"
+                android:hint="Search apps, settings..."
+                android:textColorHint="#66FFFFFF"
                 android:textColor="#FFFFFF"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:paddingBottom="6dp" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Slide all the way right to change your default home app."
-                android:textColor="#BBFFFFFF"
-                android:textSize="12sp"
-                android:paddingBottom="18dp" />
-
-            <TextView
-                android:id="@+id/slider_label"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Slide to switch launcher"
-                android:textColor="#0078D4"
-                android:textSize="12sp"
-                android:paddingBottom="8dp" />
-
-            <SeekBar
-                android:id="@+id/switch_slider"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:max="100"
-                android:progress="0"
-                android:progressTint="#0078D4"
-                android:thumbTint="#0078D4" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Tap outside this box to cancel"
-                android:textColor="#66FFFFFF"
-                android:textSize="10sp"
-                android:gravity="center"
-                android:paddingTop="14dp" />
+                android:textSize="13sp"
+                android:singleLine="true"
+                android:imeOptions="actionSearch"
+                android:inputType="text" />
         </LinearLayout>
-    </FrameLayout>
 
-    <!-- Taskbar -->
+        <!-- Pinned header row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="16dp"
+            android:paddingEnd="12dp"
+            android:paddingTop="4dp"
+            android:paddingBottom="6dp">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Pinned"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+            <TextView
+                android:id="@+id/all_apps_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="All apps  ›"
+                android:textColor="#8B8B8B"
+                android:textSize="11sp"
+                android:paddingStart="8dp"
+                android:paddingEnd="4dp"
+                android:paddingTop="4dp"
+                android:paddingBottom="4dp"
+                android:clickable="true"
+                android:focusable="true" />
+        </LinearLayout>
+
+        <!-- App grid inside Start Menu -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/start_apps"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:maxHeight="180dp"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:paddingBottom="4dp"
+            android:clipToPadding="false" />
+
+        <!-- Divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="12dp"
+            android:layout_marginTop="6dp"
+            android:background="#22FFFFFF" />
+
+        <!-- Bottom row: user / switch launcher / power -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp">
+
+            <LinearLayout
+                android:id="@+id/start_switch_btn"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_weight="1"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:background="?android:attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="👤"
+                    android:textSize="16sp"
+                    android:paddingEnd="8dp" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Switch Launcher"
+                    android:textColor="#CCFFFFFF"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:text="⏻"
+                android:textSize="18sp"
+                android:textColor="#AAFFFFFF"
+                android:gravity="center"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:focusable="true" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- ══════════════════════════════════════════════════════════════
+         SYSTEM TRAY PANEL  (bottom-right, GONE by default)
+    ═══════════════════════════════════════════════════════════════ -->
+    <LinearLayout
+        android:id="@+id/systray_panel"
+        android:layout_width="280dp"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/taskbar"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="4dp"
+        android:orientation="vertical"
+        android:background="@drawable/bg_win11_panel"
+        android:elevation="24dp"
+        android:padding="14dp"
+        android:visibility="gone"
+        android:clickable="true"
+        android:focusable="true">
+
+        <!-- Quick toggles 2x2 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:paddingBottom="10dp">
+
+            <LinearLayout android:id="@+id/tog_wifi"
+                android:layout_width="0dp" android:layout_height="48dp" android:layout_weight="1"
+                android:orientation="vertical" android:gravity="center"
+                android:background="@drawable/bg_toggle_on" android:layout_margin="3dp"
+                android:clickable="true" android:focusable="true">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="📶" android:textSize="16sp" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="Wi-Fi" android:textColor="#CCFFFFFF" android:textSize="9sp" />
+            </LinearLayout>
+
+            <LinearLayout android:id="@+id/tog_bt"
+                android:layout_width="0dp" android:layout_height="48dp" android:layout_weight="1"
+                android:orientation="vertical" android:gravity="center"
+                android:background="@drawable/bg_toggle_on" android:layout_margin="3dp"
+                android:clickable="true" android:focusable="true">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="🔵" android:textSize="16sp" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="Bluetooth" android:textColor="#CCFFFFFF" android:textSize="9sp" />
+            </LinearLayout>
+
+            <LinearLayout android:id="@+id/tog_air"
+                android:layout_width="0dp" android:layout_height="48dp" android:layout_weight="1"
+                android:orientation="vertical" android:gravity="center"
+                android:background="@drawable/bg_toggle_off" android:layout_margin="3dp"
+                android:clickable="true" android:focusable="true">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="✈️" android:textSize="16sp" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="Airplane" android:textColor="#88FFFFFF" android:textSize="9sp" />
+            </LinearLayout>
+
+            <LinearLayout android:id="@+id/tog_focus"
+                android:layout_width="0dp" android:layout_height="48dp" android:layout_weight="1"
+                android:orientation="vertical" android:gravity="center"
+                android:background="@drawable/bg_toggle_off" android:layout_margin="3dp"
+                android:clickable="true" android:focusable="true">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="🌙" android:textSize="16sp" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="Focus" android:textColor="#88FFFFFF" android:textSize="9sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Brightness row -->
+        <LinearLayout
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="horizontal" android:gravity="center_vertical"
+            android:paddingBottom="6dp">
+            <TextView android:layout_width="24dp" android:layout_height="wrap_content"
+                android:text="🔆" android:textSize="14sp" android:paddingEnd="6dp" />
+            <SeekBar android:layout_width="0dp" android:layout_height="wrap_content"
+                android:layout_weight="1" android:max="100" android:progress="70"
+                android:progressTint="#0067C0" android:thumbTint="#0067C0" />
+        </LinearLayout>
+
+        <!-- Volume row -->
+        <LinearLayout
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="horizontal" android:gravity="center_vertical"
+            android:paddingBottom="10dp">
+            <TextView android:layout_width="24dp" android:layout_height="wrap_content"
+                android:text="🔊" android:textSize="14sp" android:paddingEnd="6dp" />
+            <SeekBar android:layout_width="0dp" android:layout_height="wrap_content"
+                android:layout_weight="1" android:max="100" android:progress="50"
+                android:progressTint="#0067C0" android:thumbTint="#0067C0" />
+        </LinearLayout>
+
+        <!-- Divider -->
+        <View android:layout_width="match_parent" android:layout_height="1dp"
+            android:background="#22FFFFFF" android:layout_marginBottom="10dp" />
+
+        <!-- Switch launcher slider -->
+        <TextView
+            android:id="@+id/slider_label"
+            android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="Slide → to switch launcher"
+            android:textColor="#88FFFFFF" android:textSize="10sp"
+            android:paddingBottom="4dp" />
+        <SeekBar
+            android:id="@+id/switch_slider"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:max="100" android:progress="0"
+            android:progressTint="#0067C0" android:thumbTint="#FFFFFF" />
+
+        <!-- Divider -->
+        <View android:layout_width="match_parent" android:layout_height="1dp"
+            android:background="#22FFFFFF" android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp" />
+
+        <!-- Large clock in tray -->
+        <TextView
+            android:id="@+id/tray_clock"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:text="10:30 AM"
+            android:textColor="#FFFFFF" android:textSize="26sp"
+            android:fontFamily="sans-serif-light"
+            android:gravity="center" />
+        <TextView
+            android:id="@+id/tray_date"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:text="Tuesday, June 24, 2025"
+            android:textColor="#88FFFFFF" android:textSize="11sp"
+            android:gravity="center" android:paddingTop="2dp" android:paddingBottom="4dp" />
+    </LinearLayout>
+
+    <!-- ══════════════════════════════════════════════════════════════
+         TASKBAR — centered Start button, flanked by equal-weight sides
+    ═══════════════════════════════════════════════════════════════ -->
     <LinearLayout
         android:id="@+id/taskbar"
         android:layout_width="match_parent"
-        android:layout_height="52dp"
+        android:layout_height="48dp"
         android:layout_alignParentBottom="true"
         android:orientation="horizontal"
         android:background="@color/win_taskbar"
         android:gravity="center_vertical"
-        android:paddingStart="6dp"
-        android:paddingEnd="6dp"
-        android:elevation="6dp">
+        android:elevation="8dp">
 
-        <!-- Start button -->
+        <!-- LEFT SIDE: search + widgets (weight=1 so it mirrors right side) -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="horizontal"
+            android:gravity="start|center_vertical"
+            android:paddingStart="4dp">
+
+            <!-- Search pill -->
+            <LinearLayout
+                android:id="@+id/taskbar_search"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:background="#1AFFFFFF"
+                android:paddingStart="10dp"
+                android:paddingEnd="14dp"
+                android:clickable="true"
+                android:focusable="true">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="🔍" android:textSize="13sp" android:paddingEnd="6dp" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="Search"
+                    android:textColor="#88FFFFFF" android:textSize="12sp" />
+            </LinearLayout>
+
+            <!-- Chat button -->
+            <TextView
+                android:id="@+id/chat_btn"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:text="💬"
+                android:textSize="18sp"
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:layout_marginStart="2dp" />
+        </LinearLayout>
+
+        <!-- CENTER: Windows Start button (fixed width, truly centered) -->
         <TextView
             android:id="@+id/start_btn"
-            android:layout_width="46dp"
-            android:layout_height="46dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:text="⊞"
             android:textSize="22sp"
             android:textColor="#FFFFFF"
@@ -105,50 +367,51 @@
             android:focusable="true"
             android:background="?android:attr/selectableItemBackgroundBorderless" />
 
-        <!-- Flexible spacer -->
-        <View
-            android:layout_width="0dp"
-            android:layout_height="1dp"
-            android:layout_weight="1" />
-
-        <!-- Switch launcher button -->
+        <!-- RIGHT SIDE: system tray (weight=1, mirrors left) -->
         <LinearLayout
-            android:id="@+id/switch_btn"
-            android:layout_width="wrap_content"
+            android:id="@+id/systray_btn"
+            android:layout_width="0dp"
             android:layout_height="match_parent"
+            android:layout_weight="1"
             android:orientation="horizontal"
-            android:gravity="center"
-            android:paddingStart="10dp"
-            android:paddingEnd="10dp"
+            android:gravity="end|center_vertical"
+            android:paddingEnd="4dp"
             android:clickable="true"
             android:focusable="true"
             android:background="?android:attr/selectableItemBackground">
+
+            <!-- Status icons -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="⇄ Switch"
-                android:textColor="#AAFFFFFF"
-                android:textSize="11sp" />
+                android:text="▲ 🔋"
+                android:textColor="#CCFFFFFF"
+                android:textSize="11sp"
+                android:paddingEnd="6dp" />
+
+            <!-- Clock + date (two lines) -->
+            <TextView
+                android:id="@+id/taskbar_clock"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="10:30 AM&#10;Tue 6/24"
+                android:textColor="#FFFFFF"
+                android:textSize="10sp"
+                android:gravity="end"
+                android:paddingEnd="4dp" />
+
+            <!-- Notification badge -->
+            <TextView
+                android:id="@+id/notif_btn"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:text="🔔"
+                android:textSize="15sp"
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?android:attr/selectableItemBackgroundBorderless" />
         </LinearLayout>
-
-        <!-- Divider -->
-        <View
-            android:layout_width="1dp"
-            android:layout_height="24dp"
-            android:background="#44FFFFFF"
-            android:layout_marginStart="4dp"
-            android:layout_marginEnd="4dp" />
-
-        <!-- Clock -->
-        <TextView
-            android:id="@+id/taskbar_clock"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="12:00 PM&#10;Mon 1/1"
-            android:textColor="#FFFFFF"
-            android:textSize="10sp"
-            android:gravity="center"
-            android:paddingStart="6dp"
-            android:paddingEnd="6dp" />
     </LinearLayout>
+
 </RelativeLayout>

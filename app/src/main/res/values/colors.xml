@@ -1,8 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="win_desktop">#141414</color>
-    <color name="win_taskbar">#1F1F1F</color>
-    <color name="win_accent">#0078D4</color>
-    <color name="android_accent">#7C4DFF</color>
+    <color name="win_desktop">#040812</color>
+    <color name="win_desktop_glow">#0C0C24</color>
+    <color name="win_taskbar">#1A1A1A</color>
+    <color name="win_panel">#252526</color>
+    <color name="win_panel_border">#3C3C3C</color>
+    <color name="win_accent">#0067C0</color>
+    <color name="win_toggle_off">#3A3A3A</color>
+    <color name="win_toggle_on">#0067C0</color>
     <color name="ic_launcher_bg">#7C4DFF</color>
+    <color name="android_accent">#7C4DFF</color>
 </resources>

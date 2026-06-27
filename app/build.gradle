@@ -1,19 +1,16 @@
 plugins {
     id 'com.android.application'
 }
-
 android {
     namespace 'com.hiding.launcher'
     compileSdk 34
-
     defaultConfig {
         applicationId "com.hiding.launcher"
         minSdk 26
         targetSdk 34
-        versionCode 1
-        versionName "1.0"
+        versionCode 2
+        versionName "2.0"
     }
-
     buildTypes {
         debug {}
         release {
@@ -21,14 +18,13 @@ android {
             signingConfig signingConfigs.debug
         }
     }
-
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
 }
-
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'androidx.recyclerview:recyclerview:1.3.1'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
 }
