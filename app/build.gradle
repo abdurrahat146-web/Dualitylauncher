@@ -6,7 +6,7 @@ android {
     compileSdk 34
     defaultConfig {
         applicationId "com.hiding.launcher"
-        minSdk 26
+        minSdk 21
         targetSdk 34
         versionCode 2
         versionName "2.0"
