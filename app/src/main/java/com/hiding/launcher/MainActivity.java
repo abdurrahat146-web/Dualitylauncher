@@ -133,13 +133,6 @@ public class MainActivity extends AppCompatActivity {
     // ─────────────────────────────────────────────────────────────────────────
 
     private void bindWindowsUI() {
-        // Desktop grid
-        RecyclerView desktop = findViewById(R.id.desktop_grid);
-        if (desktop != null) {
-            desktop.setLayoutManager(new GridLayoutManager(this, 7));
-            desktop.setAdapter(new AppGridAdapter(new ArrayList<>(installedApps), true));
-        }
-
         // ── Start button ──────────────────────────────────────────────────────
         View startBtn    = findViewById(R.id.start_btn);
         View startPanel  = findViewById(R.id.start_panel);
@@ -150,10 +143,6 @@ public class MainActivity extends AppCompatActivity {
 
         // ── Start menu: search + app grid ─────────────────────────────────────
         if (startPanel != null) {
-            // Dismiss when clicking the panel backdrop (but not the panel itself — it's clickable)
-            View backdrop = findViewById(R.id.desktop_grid);
-            if (backdrop != null) backdrop.setOnClickListener(v -> closeOverlays());
-
             // App grid inside start menu
             RecyclerView startApps = startPanel.findViewById(R.id.start_apps);
             final AppGridAdapter[] startAdapter = { new AppGridAdapter(new ArrayList<>(installedApps), true) };
