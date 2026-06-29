@@ -337,17 +337,17 @@
             android:orientation="horizontal"
             android:gravity="center_vertical">
 
-            <!-- Windows Start button -->
-            <TextView
+            <!-- Windows Start button — real Win11 logo -->
+            <ImageView
                 android:id="@+id/start_btn"
                 android:layout_width="44dp"
                 android:layout_height="44dp"
-                android:text="⊞"
-                android:textSize="24sp"
-                android:textColor="#FFFFFF"
-                android:gravity="center"
+                android:src="@drawable/ic_win_start"
+                android:scaleType="fitCenter"
+                android:padding="10dp"
                 android:clickable="true"
                 android:focusable="true"
+                android:contentDescription="Start"
                 android:background="?android:attr/selectableItemBackgroundBorderless" />
 
             <!-- Search pill — rounded, Win11 style -->
