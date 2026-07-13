@@ -1,11 +1,17 @@
 package com.hiding.launcher;
 
+import android.app.NotificationManager;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothManager;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
 import android.graphics.drawable.Drawable;
+import android.media.AudioManager;
+import android.net.wifi.WifiManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.Settings;
@@ -41,11 +47,9 @@ public class MainActivity extends AppCompatActivity {
     private boolean startMenuOpen    = false;
     private boolean systrayPanelOpen = false;
 
-    // Toggle states
-    private boolean togWifi    = true;
-    private boolean togBt      = true;
-    private boolean togAir     = false;
-    private boolean togFocus   = false;
+    // System services
+    private AudioManager audioManager;
+    private NotificationManager notificationManager;
 
     // ─────────────────────────────────────────────────────────────────────────
     // Lifecycle
@@ -54,6 +58,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
+        notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         loadApps();
         currentOrientation = getResources().getConfiguration().orientation;
         applyLayout(currentOrientation);
@@ -67,6 +73,30 @@ public class MainActivity extends AppCompatActivity {
             startMenuOpen    = false;
             systrayPanelOpen = false;
             applyLayout(currentOrientation);
+        }
+    }
+
+    private void applyLayout(int orientation) {
+        if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            setContentView(R.layout.activity_landscape);
+            bindWindowsUI();
+            bindSlider();
+        } else {
+            setContentView(R.layout.activity_portrait);
+            bindAndroidUI();
+        }
+        updateClocks();
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Portrait — Android home screen
+    // ─────────────────────────────────────────────────────────────────────────
+
+    private void bindAndroidUI() {
+        RecyclerView grid = findViewById(R.id.app_grid);
+        if (grid != null) {
+            grid.setLayoutManager(new GridLayoutManager(this, 4));
+            grid.setAdapter(new AppGridAdapter(new ArrayList<>(installedApps), false));
         }
     }
 
@@ -103,30 +133,6 @@ public class MainActivity extends AppCompatActivity {
     // ─────────────────────────────────────────────────────────────────────────
     // Layout switching
     // ─────────────────────────────────────────────────────────────────────────
-
-    private void applyLayout(int orientation) {
-        if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            setContentView(R.layout.activity_landscape);
-            bindWindowsUI();
-        } else {
-            setContentView(R.layout.activity_portrait);
-            bindAndroidUI();
-        }
-        bindSlider();
-        updateClocks();
-    }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Portrait — Android home screen
-    // ─────────────────────────────────────────────────────────────────────────
-
-    private void bindAndroidUI() {
-        RecyclerView grid = findViewById(R.id.app_grid);
-        if (grid != null) {
-            grid.setLayoutManager(new GridLayoutManager(this, 4));
-            grid.setAdapter(new AppGridAdapter(new ArrayList<>(installedApps), false));
-        }
-    }
 
     // ─────────────────────────────────────────────────────────────────────────
     // Landscape — Windows 11 desktop
@@ -189,10 +195,12 @@ public class MainActivity extends AppCompatActivity {
 
         // Quick toggles in system tray
         if (systrayPanel != null) {
-            bindToggle(systrayPanel, R.id.tog_wifi,  () -> togWifi  = !togWifi);
-            bindToggle(systrayPanel, R.id.tog_bt,    () -> togBt    = !togBt);
-            bindToggle(systrayPanel, R.id.tog_air,   () -> togAir   = !togAir);
-            bindToggle(systrayPanel, R.id.tog_focus, () -> togFocus = !togFocus);
+            bindWifiToggle(systrayPanel);
+            bindBluetoothToggle(systrayPanel);
+            bindAirplaneToggle(systrayPanel);
+            bindFocusToggle(systrayPanel);
+            bindBrightnessSlider(systrayPanel);
+            bindVolumeSlider(systrayPanel);
         }
 
         // ── Chat button ───────────────────────────────────────────────────────
@@ -216,28 +224,148 @@ public class MainActivity extends AppCompatActivity {
         if (notifBtn != null) notifBtn.setOnClickListener(v -> toggleSystrayPanel(systrayPanel));
     }
 
-    private void bindToggle(View parent, int id, Runnable toggle) {
-        View tog = parent.findViewById(id);
+    // ─────────────────────────────────────────────────────────────────────────
+    // Quick settings — real system state where Android allows it
+    // ─────────────────────────────────────────────────────────────────────────
+
+    private void setToggleVisual(View tog, boolean on) {
         if (tog == null) return;
-        tog.setOnClickListener(v -> {
-            toggle.run();
-            boolean on = getToggleState(id);
-            tog.setBackgroundResource(on ? R.drawable.bg_toggle_on : R.drawable.bg_toggle_off);
-            for (int i = 0; i < ((ViewGroup) tog).getChildCount(); i++) {
-                View child = ((ViewGroup) tog).getChildAt(i);
+        tog.setBackgroundResource(on ? R.drawable.bg_toggle_on : R.drawable.bg_toggle_off);
+        if (tog instanceof ViewGroup) {
+            ViewGroup vg = (ViewGroup) tog;
+            for (int i = 0; i < vg.getChildCount(); i++) {
+                View child = vg.getChildAt(i);
                 if (child instanceof TextView) {
                     ((TextView) child).setTextColor(on ? 0xFFFFFFFF : 0x88FFFFFF);
                 }
             }
+        }
+    }
+
+    // WiFi — Android 10+ blocks apps from silently toggling WiFi.
+    // We show real current state, and tapping opens the actual system WiFi panel.
+    private void bindWifiToggle(View parent) {
+        View tog = parent.findViewById(R.id.tog_wifi);
+        if (tog == null) return;
+        WifiManager wm = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
+        boolean on = wm != null && wm.isWifiEnabled();
+        setToggleVisual(tog, on);
+        tog.setOnClickListener(v -> {
+            try {
+                startActivity(new Intent(Settings.Panel.ACTION_WIFI));
+            } catch (Exception e) {
+                try { startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS)); }
+                catch (Exception e2) { Toast.makeText(this, "Couldn't open Wi-Fi settings", Toast.LENGTH_SHORT).show(); }
+            }
         });
     }
 
-    private boolean getToggleState(int id) {
-        if (id == R.id.tog_wifi)  return togWifi;
-        if (id == R.id.tog_bt)    return togBt;
-        if (id == R.id.tog_air)   return togAir;
-        if (id == R.id.tog_focus) return togFocus;
-        return false;
+    // Bluetooth — same platform restriction as WiFi since Android 13.
+    private void bindBluetoothToggle(View parent) {
+        View tog = parent.findViewById(R.id.tog_bt);
+        if (tog == null) return;
+        boolean on = false;
+        try {
+            BluetoothManager bm = (BluetoothManager) getSystemService(BLUETOOTH_SERVICE);
+            BluetoothAdapter adapter = bm != null ? bm.getAdapter() : null;
+            on = adapter != null && adapter.isEnabled();
+        } catch (SecurityException ignored) {}
+        setToggleVisual(tog, on);
+        tog.setOnClickListener(v -> {
+            try {
+                startActivity(new Intent(Settings.ACTION_BLUETOOTH_SETTINGS));
+            } catch (Exception e) {
+                Toast.makeText(this, "Couldn't open Bluetooth settings", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    // Airplane mode — no app has been able to set this directly since Android 4.2.
+    private void bindAirplaneToggle(View parent) {
+        View tog = parent.findViewById(R.id.tog_air);
+        if (tog == null) return;
+        boolean on = Settings.Global.getInt(getContentResolver(), Settings.Global.AIRPLANE_MODE_ON, 0) != 0;
+        setToggleVisual(tog, on);
+        tog.setOnClickListener(v -> {
+            try {
+                startActivity(new Intent(Settings.ACTION_AIRPLANE_MODE_SETTINGS));
+            } catch (Exception e) {
+                Toast.makeText(this, "Couldn't open Airplane mode settings", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    // Focus / Do Not Disturb — this one CAN be toggled directly, with permission.
+    private void bindFocusToggle(View parent) {
+        View tog = parent.findViewById(R.id.tog_focus);
+        if (tog == null) return;
+        boolean on = isDndOn();
+        setToggleVisual(tog, on);
+        tog.setOnClickListener(v -> {
+            if (!notificationManager.isNotificationPolicyAccessGranted()) {
+                Toast.makeText(this, "Allow Do Not Disturb access, then tap Focus again", Toast.LENGTH_LONG).show();
+                try {
+                    startActivity(new Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS));
+                } catch (Exception ignored) {}
+                return;
+            }
+            boolean newOn = !isDndOn();
+            notificationManager.setInterruptionFilter(
+                newOn ? NotificationManager.INTERRUPTION_FILTER_PRIORITY
+                      : NotificationManager.INTERRUPTION_FILTER_ALL);
+            setToggleVisual(tog, newOn);
+        });
+    }
+
+    private boolean isDndOn() {
+        if (!notificationManager.isNotificationPolicyAccessGranted()) return false;
+        int filter = notificationManager.getCurrentInterruptionFilter();
+        return filter != NotificationManager.INTERRUPTION_FILTER_ALL;
+    }
+
+    // Brightness slider — real, needs WRITE_SETTINGS (special permission screen).
+    private void bindBrightnessSlider(View parent) {
+        SeekBar slider = parent.findViewById(R.id.brightness_slider);
+        if (slider == null) return;
+        try {
+            int cur = Settings.System.getInt(getContentResolver(), Settings.System.SCREEN_BRIGHTNESS);
+            slider.setProgress((int) (cur / 255f * 100));
+        } catch (Exception ignored) {}
+
+        slider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override public void onProgressChanged(SeekBar s, int progress, boolean fromUser) {
+                if (!fromUser) return;
+                if (!Settings.System.canWrite(MainActivity.this)) return;
+                int value = (int) (progress / 100f * 255);
+                Settings.System.putInt(getContentResolver(), Settings.System.SCREEN_BRIGHTNESS, value);
+            }
+            @Override public void onStartTrackingTouch(SeekBar s) {
+                if (!Settings.System.canWrite(MainActivity.this)) {
+                    Toast.makeText(MainActivity.this, "Allow \"Modify system settings\", then try again", Toast.LENGTH_LONG).show();
+                    Intent i = new Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS,
+                        Uri.parse("package:" + getPackageName()));
+                    try { startActivity(i); } catch (Exception ignored) {}
+                }
+            }
+            @Override public void onStopTrackingTouch(SeekBar s) {}
+        });
+    }
+
+    // Volume slider — works immediately, no special permission needed.
+    private void bindVolumeSlider(View parent) {
+        SeekBar slider = parent.findViewById(R.id.volume_slider);
+        if (slider == null || audioManager == null) return;
+        int max = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+        int cur = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+        slider.setMax(max);
+        slider.setProgress(cur);
+        slider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override public void onProgressChanged(SeekBar s, int progress, boolean fromUser) {
+                if (fromUser) audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, progress, 0);
+            }
+            @Override public void onStartTrackingTouch(SeekBar s) {}
+            @Override public void onStopTrackingTouch(SeekBar s) {}
+        });
     }
 
     private void toggleStartMenu(View panel) {
