@@ -240,7 +240,8 @@
             android:paddingBottom="6dp">
             <TextView android:layout_width="24dp" android:layout_height="wrap_content"
                 android:text="🔆" android:textSize="14sp" android:paddingEnd="6dp" />
-            <SeekBar android:layout_width="0dp" android:layout_height="wrap_content"
+            <SeekBar android:id="@+id/brightness_slider"
+                android:layout_width="0dp" android:layout_height="wrap_content"
                 android:layout_weight="1" android:max="100" android:progress="70"
                 android:progressTint="#0067C0" android:thumbTint="#0067C0" />
         </LinearLayout>
@@ -252,7 +253,8 @@
             android:paddingBottom="10dp">
             <TextView android:layout_width="24dp" android:layout_height="wrap_content"
                 android:text="🔊" android:textSize="14sp" android:paddingEnd="6dp" />
-            <SeekBar android:layout_width="0dp" android:layout_height="wrap_content"
+            <SeekBar android:id="@+id/volume_slider"
+                android:layout_width="0dp" android:layout_height="wrap_content"
                 android:layout_weight="1" android:max="100" android:progress="50"
                 android:progressTint="#0067C0" android:thumbTint="#0067C0" />
         </LinearLayout>
