@@ -193,14 +193,16 @@ public class MainActivity extends AppCompatActivity {
             systrayBtn.setOnClickListener(v -> toggleSystrayPanel(systrayPanel));
         }
 
-        // Quick toggles in system tray
+        // Quick toggles in system tray — wrapped so one bad device/API quirk
+        // can't crash the whole launcher (this is the default launcher, so a
+        // crash here would crash-loop the entire home screen).
         if (systrayPanel != null) {
-            bindWifiToggle(systrayPanel);
-            bindBluetoothToggle(systrayPanel);
-            bindAirplaneToggle(systrayPanel);
-            bindFocusToggle(systrayPanel);
-            bindBrightnessSlider(systrayPanel);
-            bindVolumeSlider(systrayPanel);
+            safeBind("wifi",       () -> bindWifiToggle(systrayPanel));
+            safeBind("bluetooth",  () -> bindBluetoothToggle(systrayPanel));
+            safeBind("airplane",   () -> bindAirplaneToggle(systrayPanel));
+            safeBind("focus/dnd",  () -> bindFocusToggle(systrayPanel));
+            safeBind("brightness", () -> bindBrightnessSlider(systrayPanel));
+            safeBind("volume",     () -> bindVolumeSlider(systrayPanel));
         }
 
         // ── Chat button ───────────────────────────────────────────────────────
@@ -222,6 +224,17 @@ public class MainActivity extends AppCompatActivity {
         // ── Notification button (decorative) ──────────────────────────────────
         View notifBtn = findViewById(R.id.notif_btn);
         if (notifBtn != null) notifBtn.setOnClickListener(v -> toggleSystrayPanel(systrayPanel));
+    }
+
+    // Runs a binding step, swallowing any exception so a single quirky API
+    // call (e.g. Bluetooth returning null on some devices) can't crash the
+    // whole launcher and trigger a crash-loop.
+    private void safeBind(String label, Runnable action) {
+        try {
+            action.run();
+        } catch (Exception e) {
+            android.util.Log.e("DualityLauncher", "safeBind failed for " + label, e);
+        }
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -269,7 +282,7 @@ public class MainActivity extends AppCompatActivity {
             BluetoothManager bm = (BluetoothManager) getSystemService(BLUETOOTH_SERVICE);
             BluetoothAdapter adapter = bm != null ? bm.getAdapter() : null;
             on = adapter != null && adapter.isEnabled();
-        } catch (SecurityException ignored) {}
+        } catch (Exception ignored) {}
         setToggleVisual(tog, on);
         tog.setOnClickListener(v -> {
             try {
