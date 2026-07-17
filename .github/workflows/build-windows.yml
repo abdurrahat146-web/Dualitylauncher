@@ -1,0 +1,69 @@
+name: Build Windows Game
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up MinGW (g++)
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-glfw
+            mingw-w64-x86_64-python
+            mingw-w64-x86_64-python-pip
+            mingw-w64-x86_64-make
+            git
+            curl
+            unzip
+
+      - name: Install glad's Python dependencies
+        shell: msys2 {0}
+        run: pip install jinja2
+
+      - name: Build the game
+        shell: msys2 {0}
+        run: |
+          cd "$GITHUB_WORKSPACE"
+          rm -rf build
+          mkdir -p build
+          cd build
+          cmake -G "MinGW Makefiles" \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_COMPILER=/mingw64/bin/gcc.exe \
+            -DCMAKE_CXX_COMPILER=/mingw64/bin/g++.exe \
+            -DCMAKE_MAKE_PROGRAM=/mingw64/bin/mingw32-make.exe \
+            ..
+          cmake --build . --config Release
+
+      - name: Package output
+        shell: bash
+        run: |
+          mkdir -p dist
+          cp build/ShelterProtocol.exe dist/ 2>/dev/null || cp build/*.exe dist/
+          cp -r shaders dist/
+          # Bundle the MinGW runtime DLLs so the exe runs on a clean
+          # Windows machine without needing MSYS2 installed.
+          cp /c/msys64/mingw64/bin/libgcc_s_seh-1.dll dist/ 2>/dev/null || true
+          cp /c/msys64/mingw64/bin/libstdc++-6.dll dist/ 2>/dev/null || true
+          cp /c/msys64/mingw64/bin/libwinpthread-1.dll dist/ 2>/dev/null || true
+          cp /c/msys64/mingw64/bin/glfw3.dll dist/ 2>/dev/null || true
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ShelterProtocol-Windows
+          path: dist/
+          retention-days: 30
